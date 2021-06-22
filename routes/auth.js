@@ -1,30 +1,29 @@
 const express = require("express");
 let router = express.Router();
 const bcrypt = require('bcrypt');
-let { insertUsers } = require('../shared/constant/sqlContant');
+let { insertUsers, getUserByEmail } = require('../shared/constant/sqlContant');
 const db = require('../config/database');
+const { genToken } = require('../shared/util/genToken');
 
 router
     .route("/login")
     .post(async (req, res) => {
-        console.log(req.body);
-        
-        res.sendStatus(200);
-        // try {
-        //     const users = await usersController.findByEmail(req.body.email);
-        //     bcrypt.compare(req.body.password, users.password, function(err, result) {
-        //         // result == true
-        //         console.log(result);
-        //         if (result){
-        //             let userToken = genToken(users.id);
-        //             res.status(200).json({token: userToken, displayname: users.name, email: users.email});
-        //         }else {
-        //             res.status(401).send();
-        //         }
-        //     });
-        // } catch(e) {
-        //     console.log(e);
-        // }
+        try {
+            const data = await db.query(getUserByEmail(req.body.email));
+            const user = data[0][0];
+            bcrypt.compare(req.body.password, user.password, function(err, result) {
+                
+                if (result){
+                    let userToken = genToken(user.id);
+                    res.status(200).json({token: userToken, display: user.display, email: user.email});
+                }else {
+                    res.status(401).send();
+                }
+            });
+        } catch(e) {
+            console.log(e);
+            res.status(500).send({"error": e});
+        }
     })
 
 router
