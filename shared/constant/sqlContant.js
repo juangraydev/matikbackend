@@ -41,11 +41,22 @@ const getUserById = (id) => {
 }
 
 const getUserByEmail = (email) => {
-
+    return(`
+            SELECT * FROM users
+            WHERE users.email = '${email}'
+            limit 1
+        `)
 }
 
 const addUser = (data) => {
+    const {name, email, hashedPassword} = data;
 
+        return (`
+            INSERT INTO users
+            (id, display, email, type, password)
+            VALUES
+            ( NULL, '${name}', '${email}', 0, '${hashedPassword}')
+        `);
 }
 
 const deleteUserById = (id) => {
